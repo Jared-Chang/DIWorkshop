@@ -77,6 +77,28 @@ namespace DependencyInjectionWorkshopTests
             _failedCounter.Received(1).Reset(accountId);
         }
 
+        private void WhenInvalid()
+        {
+            GivenPasswordFromDb(DefaultAccountId, DefaultHashedPassword);
+            GivenHashedPassword(DefaultPassword, DefaultHashedPassword);
+            GivenOtp(DefaultAccountId, DefaultOtp);
+
+            _authenticationService.Verify(DefaultAccountId, DefaultPassword, "wrong otp");
+        }
+
+        private void ShouldIncreaseFailedCount(string accountId)
+        {
+            _failedCounter.Received(1).Increase(accountId);
+        }
+
+        [Test]
+        public void increase_failed_count_when_invalid()
+        {
+            WhenInvalid();
+
+            ShouldIncreaseFailedCount(DefaultAccountId);
+        }
+
         [Test]
         public void is_invalid()
         {
