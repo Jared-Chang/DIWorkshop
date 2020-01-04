@@ -9,8 +9,34 @@ using SlackAPI;
 
 namespace DependencyInjectionWorkshop.Models
 {
+    public class ProfileDao
+    {
+        public ProfileDao()
+        {
+        }
+
+        public string PasswordFromDb(string accountId)
+        {
+            string passwordFromDb;
+            using (var connection = new SqlConnection("my connection string"))
+            {
+                passwordFromDb = connection.Query<string>("spGetUserPassword", new {Id = accountId},
+                    commandType: CommandType.StoredProcedure).SingleOrDefault();
+            }
+
+            return passwordFromDb;
+        }
+    }
+
     public class AuthenticationService
     {
+        private readonly ProfileDao _profileDao;
+
+        public AuthenticationService()
+        {
+            _profileDao = new ProfileDao();
+        }
+
         public bool Verify(string accountId, string password, string otp)
         {
             var httpClient = new HttpClient() {BaseAddress = new Uri("http://joey.com/")};
@@ -21,7 +47,7 @@ namespace DependencyInjectionWorkshop.Models
                 throw new FailedTooManyTimesException(){AccountId = accountId};
             }
 
-            var passwordFromDb = PasswordFromDb(accountId);
+            var passwordFromDb = _profileDao.PasswordFromDb(accountId);
             var hashedPassword = HashedPassword(password);
             var currentOtp = CurrentOtp(accountId, otp, httpClient);
 
@@ -41,14 +67,14 @@ namespace DependencyInjectionWorkshop.Models
             }
         }
 
-        private static void NotifyLoginFailed(string accountId)
+        private void NotifyLoginFailed(string accountId)
         {
             string message = $"account:{accountId} try to login failed";
             var slackClient = new SlackClient("my api token");
             slackClient.PostMessage(response1 => { }, "my channel", message, "my bot name");
         }
 
-        private static void LogFailedCount(string accountId, HttpClient httpClient)
+        private void LogFailedCount(string accountId, HttpClient httpClient)
         {
             var failedCountResponse =
                 httpClient.PostAsJsonAsync("api/failedCounter/GetFailedCount", accountId).Result;
@@ -60,19 +86,19 @@ namespace DependencyInjectionWorkshop.Models
             logger.Info($"accountId:{accountId} failed times:{failedCount}");
         }
 
-        private static void AddFailedCount(string accountId, HttpClient httpClient)
+        private void AddFailedCount(string accountId, HttpClient httpClient)
         {
             var response = httpClient.PostAsJsonAsync("api/failedCounter/Add", accountId).Result;
             response.EnsureSuccessStatusCode();
         }
 
-        private static void ResetFailedCount(string accountId, HttpClient httpClient)
+        private void ResetFailedCount(string accountId, HttpClient httpClient)
         {
             var response = httpClient.PostAsJsonAsync("api/failedCounter/Reset", accountId).Result;
             response.EnsureSuccessStatusCode();
         }
 
-        private static string CurrentOtp(string accountId, string otp, HttpClient httpClient)
+        private string CurrentOtp(string accountId, string otp, HttpClient httpClient)
         {
             var response = httpClient.PostAsJsonAsync("api/otps", accountId).Result;
             if (!response.IsSuccessStatusCode)
@@ -83,7 +109,7 @@ namespace DependencyInjectionWorkshop.Models
             return response.Content.ReadAsAsync<string>().Result;
         }
 
-        private static bool IsLocked(string accountId, HttpClient httpClient)
+        private bool IsLocked(string accountId, HttpClient httpClient)
         {
             var isLockedResponse = httpClient.PostAsJsonAsync("api/failedCounter/IsLocked", accountId).Result;
 
@@ -92,7 +118,7 @@ namespace DependencyInjectionWorkshop.Models
             return isLocked;
         }
 
-        private static string HashedPassword(string password)
+        private string HashedPassword(string password)
         {
             var crypt = new System.Security.Cryptography.SHA256Managed();
             var hashedPassword = crypt.ComputeHash(Encoding.UTF8.GetBytes(password))
@@ -100,18 +126,6 @@ namespace DependencyInjectionWorkshop.Models
                 .ToString();
 
             return hashedPassword;
-        }
-
-        private static string PasswordFromDb(string accountId)
-        {
-            string passwordFromDb;
-            using (var connection = new SqlConnection("my connection string"))
-            {
-                passwordFromDb = connection.Query<string>("spGetUserPassword", new {Id = accountId},
-                    commandType: CommandType.StoredProcedure).SingleOrDefault();
-            }
-
-            return passwordFromDb;
         }
     }
 
