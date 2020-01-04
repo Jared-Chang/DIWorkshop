@@ -8,17 +8,14 @@
     public class AuthenticationService : IAuthenticationService
     {
         private readonly IHash _hash;
-        private readonly INotification _notification;
         private readonly IOtpService _otpService;
         private readonly IProfile _profileDao;
 
-        public AuthenticationService(IProfile profileDao, IHash hash, IOtpService otpService,
-            INotification notification)
+        public AuthenticationService(IProfile profileDao, IHash hash, IOtpService otpService)
         {
             _profileDao = profileDao;
             _hash = hash;
             _otpService = otpService;
-            _notification = notification;
         }
 
         public bool Verify(string accountId, string password, string otp)

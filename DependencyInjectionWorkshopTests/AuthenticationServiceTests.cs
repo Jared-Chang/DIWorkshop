@@ -19,7 +19,7 @@ namespace DependencyInjectionWorkshopTests
             _failedCounter = Substitute.For<IFailedCounter>();
 
             _authenticationService =
-                new AuthenticationService(_profileDao, _hash, _otpService, _notification);
+                new AuthenticationService(_profileDao, _hash, _otpService);
 
             _authenticationService = new LogDecorator(_authenticationService, _failedCounter, _logger);
             _authenticationService = new FailedCountDecorator(_authenticationService, _failedCounter);
