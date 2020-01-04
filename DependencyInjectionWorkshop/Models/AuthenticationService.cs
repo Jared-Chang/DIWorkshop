@@ -41,7 +41,7 @@ namespace DependencyInjectionWorkshop.Models
 
             var passwordFromDb = _profileDao.Password(accountId);
             var hashedPassword = _hash.ComputeHash(password);
-            var currentOtp = _otpService.CurrentOtp(accountId, otp);
+            var currentOtp = _otpService.CurrentOtp(accountId);
 
             if (passwordFromDb == hashedPassword && currentOtp == otp)
             {
