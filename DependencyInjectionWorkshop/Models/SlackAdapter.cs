@@ -4,7 +4,7 @@ namespace DependencyInjectionWorkshop.Models
 {
     public interface INotification
     {
-        void Notify(string accountId);
+        void Notify(string message);
     }
 
     public class Notification : INotification
@@ -13,9 +13,8 @@ namespace DependencyInjectionWorkshop.Models
         {
         }
 
-        public void Notify(string accountId)
+        public void Notify(string message)
         {
-            string message = $"account:{accountId} try to login failed";
             var slackClient = new SlackClient("my api token");
             slackClient.PostMessage(response1 => { }, "my channel", message, "my bot name");
         }
