@@ -19,7 +19,11 @@ namespace DependencyInjectionWorkshopTests
             _failedCounter = Substitute.For<IFailedCounter>();
 
             _authenticationService =
-                new AuthenticationService(_profileDao, _hash, _otpService, _notification, _failedCounter, _logger);
+                new AuthenticationService(_profileDao, _hash, _otpService, _notification);
+
+            _authenticationService = new LogDecorator(_authenticationService, _failedCounter, _logger);
+            _authenticationService = new FailedCountDecorator(_authenticationService, _failedCounter);
+            _authenticationService = new NotificationDecorator(_authenticationService, _notification);
         }
 
         [Test]
@@ -95,7 +99,7 @@ namespace DependencyInjectionWorkshopTests
         private IOtpService _otpService;
         private INotification _notification;
         private IFailedCounter _failedCounter;
-        private AuthenticationService _authenticationService;
+        private IAuthenticationService _authenticationService;
 
         private void GivenOtp(string accountId, string returnThis)
         {

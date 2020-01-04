@@ -57,7 +57,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AuthenticationDecoratorBase.cs" />
+    <Compile Include="FailedCountDecorator.cs" />
+    <Compile Include="LogDecorator.cs" />
     <Compile Include="AuthenticationServiceTests.cs" />
+    <Compile Include="NotificationDecorator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
