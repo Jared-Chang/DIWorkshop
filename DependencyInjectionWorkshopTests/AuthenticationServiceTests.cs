@@ -82,5 +82,17 @@ namespace DependencyInjectionWorkshopTests
 
             ShouldBeValid(DefaultAccountId, DefaultPassword, DefaultOtp);
         }
+
+        [Test]
+        public void reset_failed_count_when_valid()
+        {
+            GivenPasswordFromDb(DefaultAccountId, DefaultHashedPassword);
+            GivenHashedPassword(DefaultPassword, DefaultHashedPassword);
+            GivenOtp(DefaultAccountId, DefaultOtp);
+
+            _authenticationService.Verify(DefaultAccountId, DefaultPassword, DefaultOtp);
+
+            _failedCounter.Received(1).Reset(DefaultAccountId);
+        }
     }
 }
