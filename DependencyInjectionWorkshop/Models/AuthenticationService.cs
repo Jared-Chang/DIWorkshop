@@ -62,12 +62,14 @@ namespace DependencyInjectionWorkshop.Models
 
         private static void AddFailedCount(string accountId, HttpClient httpClient)
         {
-            httpClient.PostAsJsonAsync("api/failedCounter/Add", accountId).Result.EnsureSuccessStatusCode();
+            var response = httpClient.PostAsJsonAsync("api/failedCounter/Add", accountId).Result;
+            response.EnsureSuccessStatusCode();
         }
 
         private static void ResetFailedCount(string accountId, HttpClient httpClient)
         {
-            httpClient.PostAsJsonAsync("api/failedCounter/Reset", accountId).Result.EnsureSuccessStatusCode();
+            var response = httpClient.PostAsJsonAsync("api/failedCounter/Reset", accountId).Result;
+            response.EnsureSuccessStatusCode();
         }
 
         private static string CurrentOtp(string accountId, string otp, HttpClient httpClient)
@@ -93,9 +95,10 @@ namespace DependencyInjectionWorkshop.Models
         private static string HashedPassword(string password)
         {
             var crypt = new System.Security.Cryptography.SHA256Managed();
-            var hashedPassword = (from theByte in crypt.ComputeHash(Encoding.UTF8.GetBytes(password))
-                    select theByte.ToString("x2"))
+            var hashedPassword = crypt.ComputeHash(Encoding.UTF8.GetBytes(password))
+                .Aggregate(new StringBuilder(), (builder, theByte) => builder.Append(theByte))
                 .ToString();
+
             return hashedPassword;
         }
 
