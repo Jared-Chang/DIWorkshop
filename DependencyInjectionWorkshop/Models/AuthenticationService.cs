@@ -10,45 +10,36 @@ namespace DependencyInjectionWorkshop.Models
 {
     public class AuthenticationService
     {
-        public bool Varify(string accountId, string plainText, string otp)
+        public bool Varify(string accountId, string password, string otp)
         {
-            var password = "";
+            string passwordFromDb;
             using (var connection = new SqlConnection("my connection string"))
             {
-                password = connection.Query<string>("spGetUserPassword", new {Id = accountId},
+                passwordFromDb = connection.Query<string>("spGetUserPassword", new {Id = accountId},
                     commandType: CommandType.StoredProcedure).SingleOrDefault();
             }
 
             var crypt = new System.Security.Cryptography.SHA256Managed();
-            var hash = new StringBuilder();
-            var crypto = crypt.ComputeHash(Encoding.UTF8.GetBytes(plainText));
-            foreach (var theByte in crypto)
-            {
-                hash.Append(theByte.ToString("x2"));
-            }
-
-            var hashedPlainText = hash.ToString();
+            var hashedPassword = (from theByte in crypt.ComputeHash(Encoding.UTF8.GetBytes(password))
+                                  select theByte.ToString("x2"))
+                .ToArray()
+                .Aggregate("", (acc, c) => acc + c);
 
             var httpClient = new HttpClient() {BaseAddress = new Uri("http://joey.com/")};
             var response = httpClient.PostAsJsonAsync("api/otps", accountId).Result;
-            var currentOtp = "";
-            if (response.IsSuccessStatusCode)
-            {
-                currentOtp = response.Content.ReadAsAsync<string>().Result;
-            }
-            else
+            if (!response.IsSuccessStatusCode)
             {
                 throw new Exception($"web api error, accountId:{accountId}");
             }
 
-            if (password == hashedPlainText && currentOtp == otp)
+            var currentOtp = response.Content.ReadAsAsync<string>().Result == otp;
+
+            if (passwordFromDb == hashedPassword && currentOtp)
             {
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
     }
 }
