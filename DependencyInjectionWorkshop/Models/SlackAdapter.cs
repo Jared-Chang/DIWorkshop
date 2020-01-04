@@ -4,7 +4,7 @@ namespace DependencyInjectionWorkshop.Models
 {
     public interface INotification
     {
-        void Notify(string message);
+        void Notify(string accountId, string message);
     }
 
     public class Notification : INotification
@@ -13,7 +13,7 @@ namespace DependencyInjectionWorkshop.Models
         {
         }
 
-        public void Notify(string message)
+        public void Notify(string accountId, string message)
         {
             var slackClient = new SlackClient("my api token");
             slackClient.PostMessage(response1 => { }, "my channel", message, "my bot name");

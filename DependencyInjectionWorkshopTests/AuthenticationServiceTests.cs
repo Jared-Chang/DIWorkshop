@@ -1,4 +1,5 @@
-﻿using DependencyInjectionWorkshop.Models;
+﻿using System;
+using DependencyInjectionWorkshop.Models;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -102,6 +103,33 @@ namespace DependencyInjectionWorkshopTests
             _failedCounter.FailedCount(DefaultAccountId).Returns(failedCount);
         }
 
+        private void ShouldNotify()
+        {
+            _notification.Received(1)
+                .Notify(DefaultAccountId, Arg.Is<string>(message => message.Contains(DefaultAccountId)));
+        }
+
+        private void ShouldThorw<TException>() where TException : Exception
+        {
+            TestDelegate action = () =>
+                _authenticationService.Verify(DefaultAccountId, DefaultHashedPassword, DefaultOtp);
+
+            Assert.Throws<TException>(action);
+        }
+
+        private void GivenAccountIsLocked(bool isLocked)
+        {
+            _failedCounter.IsLocked(DefaultAccountId).Returns(isLocked);
+        }
+
+
+        [Test]
+        public void account_is_locked()
+        {
+            GivenAccountIsLocked(true);
+            ShouldThorw<FailedTooManyTimesException>();
+        }
+
         [Test]
         public void increase_failed_count_when_invalid()
         {
@@ -139,6 +167,15 @@ namespace DependencyInjectionWorkshopTests
             WhenInvalid();
 
             LogShouldContains(DefaultAccountId, failedCount.ToString());
+        }
+
+
+        [Test]
+        public void notify_user_when_invalid()
+        {
+            WhenInvalid();
+
+            ShouldNotify();
         }
 
         [Test]
