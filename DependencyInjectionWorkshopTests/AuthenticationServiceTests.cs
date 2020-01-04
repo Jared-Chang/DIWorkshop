@@ -91,6 +91,17 @@ namespace DependencyInjectionWorkshopTests
             _failedCounter.Received(1).Increase(accountId);
         }
 
+        private void LogShouldContains(string accountId, string failedCount)
+        {
+            _logger.Received(1)
+                .Info(Arg.Is<string>(message => message.Contains(accountId) && message.Contains(failedCount)));
+        }
+
+        private void GivenFailedCount(int failedCount)
+        {
+            _failedCounter.FailedCount(DefaultAccountId).Returns(failedCount);
+        }
+
         [Test]
         public void increase_failed_count_when_invalid()
         {
@@ -117,6 +128,17 @@ namespace DependencyInjectionWorkshopTests
             GivenOtp(DefaultAccountId, DefaultOtp);
 
             ShouldBeValid(DefaultAccountId, DefaultPassword, DefaultOtp);
+        }
+
+        [Test]
+        public void log_failed_count_when_invalid()
+        {
+            var failedCount = 91;
+            GivenFailedCount(failedCount);
+
+            WhenInvalid();
+
+            LogShouldContains(DefaultAccountId, failedCount.ToString());
         }
 
         [Test]
