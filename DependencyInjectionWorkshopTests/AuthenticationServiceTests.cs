@@ -63,6 +63,20 @@ namespace DependencyInjectionWorkshopTests
             Assert.AreEqual(true, valid);
         }
 
+        private void WhenValid()
+        {
+            GivenPasswordFromDb(DefaultAccountId, DefaultHashedPassword);
+            GivenHashedPassword(DefaultPassword, DefaultHashedPassword);
+            GivenOtp(DefaultAccountId, DefaultOtp);
+
+            _authenticationService.Verify(DefaultAccountId, DefaultPassword, DefaultOtp);
+        }
+
+        private void ShouldResetFailedCount(string accountId)
+        {
+            _failedCounter.Received(1).Reset(accountId);
+        }
+
         [Test]
         public void is_invalid()
         {
@@ -86,13 +100,9 @@ namespace DependencyInjectionWorkshopTests
         [Test]
         public void reset_failed_count_when_valid()
         {
-            GivenPasswordFromDb(DefaultAccountId, DefaultHashedPassword);
-            GivenHashedPassword(DefaultPassword, DefaultHashedPassword);
-            GivenOtp(DefaultAccountId, DefaultOtp);
+            WhenValid();
 
-            _authenticationService.Verify(DefaultAccountId, DefaultPassword, DefaultOtp);
-
-            _failedCounter.Received(1).Reset(DefaultAccountId);
+            ShouldResetFailedCount(DefaultAccountId);
         }
     }
 }
