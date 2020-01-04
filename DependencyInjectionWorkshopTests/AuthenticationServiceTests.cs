@@ -49,6 +49,30 @@ namespace DependencyInjectionWorkshopTests
             _profileDao.Password(accountId).Returns(hashedPassword);
         }
 
+        private void ShouldBeInvalid(string defaultAccountId, string defaultPassword, string otp)
+        {
+            var valid = _authenticationService.Verify(defaultAccountId, defaultPassword, otp);
+
+            Assert.AreEqual(false, valid);
+        }
+
+        private void ShouldBeValid(string defaultAccountId, string defaultPassword, string defaultOtp)
+        {
+            var valid = _authenticationService.Verify(defaultAccountId, defaultPassword, defaultOtp);
+
+            Assert.AreEqual(true, valid);
+        }
+
+        [Test]
+        public void is_invalid()
+        {
+            GivenPasswordFromDb(DefaultAccountId, DefaultHashedPassword);
+            GivenHashedPassword(DefaultPassword, DefaultHashedPassword);
+            GivenOtp(DefaultAccountId, DefaultOtp);
+
+            ShouldBeInvalid(DefaultAccountId, DefaultPassword, "wrong otp");
+        }
+
         [Test]
         public void is_valid()
         {
@@ -56,9 +80,7 @@ namespace DependencyInjectionWorkshopTests
             GivenHashedPassword(DefaultPassword, DefaultHashedPassword);
             GivenOtp(DefaultAccountId, DefaultOtp);
 
-            var valid = _authenticationService.Verify(DefaultAccountId, DefaultPassword, DefaultOtp);
-
-            Assert.AreEqual(true, valid);
+            ShouldBeValid(DefaultAccountId, DefaultPassword, DefaultOtp);
         }
     }
 }
