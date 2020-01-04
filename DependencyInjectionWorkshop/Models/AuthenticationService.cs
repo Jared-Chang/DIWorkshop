@@ -11,7 +11,7 @@ namespace DependencyInjectionWorkshop.Models
 {
     public class AuthenticationService
     {
-        public bool Varify(string accountId, string password, string otp)
+        public bool Verify(string accountId, string password, string otp)
         {
             string passwordFromDb;
             using (var connection = new SqlConnection("my connection string"))
