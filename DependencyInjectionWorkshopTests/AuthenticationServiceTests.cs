@@ -22,6 +22,68 @@ namespace DependencyInjectionWorkshopTests
                 new AuthenticationService(_profileDao, _hash, _otpService, _notification, _failedCounter, _logger);
         }
 
+        [Test]
+        public void account_is_locked()
+        {
+            GivenAccountIsLocked(true);
+            ShouldThorw<FailedTooManyTimesException>();
+        }
+
+        [Test]
+        public void increase_failed_count_when_invalid()
+        {
+            WhenInvalid();
+
+            ShouldIncreaseFailedCount(DefaultAccountId);
+        }
+
+        [Test]
+        public void is_invalid()
+        {
+            GivenPasswordFromDb(DefaultAccountId, DefaultHashedPassword);
+            GivenHashedPassword(DefaultPassword, DefaultHashedPassword);
+            GivenOtp(DefaultAccountId, DefaultOtp);
+
+            ShouldBeInvalid(DefaultAccountId, DefaultPassword, "wrong otp");
+        }
+
+        [Test]
+        public void is_valid()
+        {
+            GivenPasswordFromDb(DefaultAccountId, DefaultHashedPassword);
+            GivenHashedPassword(DefaultPassword, DefaultHashedPassword);
+            GivenOtp(DefaultAccountId, DefaultOtp);
+
+            ShouldBeValid(DefaultAccountId, DefaultPassword, DefaultOtp);
+        }
+
+        [Test]
+        public void log_failed_count_when_invalid()
+        {
+            var failedCount = 91;
+            GivenFailedCount(failedCount);
+
+            WhenInvalid();
+
+            LogShouldContains(DefaultAccountId, failedCount.ToString());
+        }
+
+        [Test]
+        public void notify_user_when_invalid()
+        {
+            WhenInvalid();
+
+            ShouldNotify();
+        }
+
+        [Test]
+        public void reset_failed_count_when_valid()
+        {
+            WhenValid();
+
+            ShouldResetFailedCount(DefaultAccountId);
+        }
+
         private const string DefaultAccountId = "joey";
         private const string DefaultHashedPassword = "hashed password";
         private const string DefaultPassword = "1234";
@@ -120,70 +182,6 @@ namespace DependencyInjectionWorkshopTests
         private void GivenAccountIsLocked(bool isLocked)
         {
             _failedCounter.IsLocked(DefaultAccountId).Returns(isLocked);
-        }
-
-
-        [Test]
-        public void account_is_locked()
-        {
-            GivenAccountIsLocked(true);
-            ShouldThorw<FailedTooManyTimesException>();
-        }
-
-        [Test]
-        public void increase_failed_count_when_invalid()
-        {
-            WhenInvalid();
-
-            ShouldIncreaseFailedCount(DefaultAccountId);
-        }
-
-        [Test]
-        public void is_invalid()
-        {
-            GivenPasswordFromDb(DefaultAccountId, DefaultHashedPassword);
-            GivenHashedPassword(DefaultPassword, DefaultHashedPassword);
-            GivenOtp(DefaultAccountId, DefaultOtp);
-
-            ShouldBeInvalid(DefaultAccountId, DefaultPassword, "wrong otp");
-        }
-
-        [Test]
-        public void is_valid()
-        {
-            GivenPasswordFromDb(DefaultAccountId, DefaultHashedPassword);
-            GivenHashedPassword(DefaultPassword, DefaultHashedPassword);
-            GivenOtp(DefaultAccountId, DefaultOtp);
-
-            ShouldBeValid(DefaultAccountId, DefaultPassword, DefaultOtp);
-        }
-
-        [Test]
-        public void log_failed_count_when_invalid()
-        {
-            var failedCount = 91;
-            GivenFailedCount(failedCount);
-
-            WhenInvalid();
-
-            LogShouldContains(DefaultAccountId, failedCount.ToString());
-        }
-
-
-        [Test]
-        public void notify_user_when_invalid()
-        {
-            WhenInvalid();
-
-            ShouldNotify();
-        }
-
-        [Test]
-        public void reset_failed_count_when_valid()
-        {
-            WhenValid();
-
-            ShouldResetFailedCount(DefaultAccountId);
         }
     }
 }
