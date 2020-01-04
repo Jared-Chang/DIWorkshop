@@ -5,21 +5,31 @@ namespace DependencyInjectionWorkshop.Models
 {
     public class AuthenticationService
     {
-        private readonly ProfileDao _profileDao;
-        private readonly Sha256Adapter _sha256Adapter;
-        private readonly OtpService _otpService;
-        private readonly SlackAdapter _slackAdapter;
-        private readonly FailedCounter _failedCounter;
-        private readonly NLogAdapter _nLogAdapter;
+        private readonly IProfile _profileDao;
+        private readonly IHash _hash;
+        private readonly IOtpService _otpService;
+        private readonly INotification _notification;
+        private readonly IFailedCounter _failedCounter;
+        private readonly ILogger _logger;
+
+        public AuthenticationService(IProfile profileDao, IHash hash, IOtpService otpService, INotification notification, IFailedCounter failedCounter, ILogger logger)
+        {
+            _profileDao = profileDao;
+            _hash = hash;
+            _otpService = otpService;
+            _notification = notification;
+            _failedCounter = failedCounter;
+            _logger = logger;
+        }
 
         public AuthenticationService()
         {
             _profileDao = new ProfileDao();
-            _sha256Adapter = new Sha256Adapter();
+            _hash = new Sha256Adapter();
             _otpService = new OtpService();
-            _slackAdapter = new SlackAdapter();
+            _notification = new Notification();
             _failedCounter = new FailedCounter();
-            _nLogAdapter = new NLogAdapter();
+            _logger = new NLogAdapter();
         }
 
         public bool Verify(string accountId, string password, string otp)
@@ -29,8 +39,8 @@ namespace DependencyInjectionWorkshop.Models
                 throw new FailedTooManyTimesException(){AccountId = accountId};
             }
 
-            var passwordFromDb = _profileDao.PasswordFromDb(accountId);
-            var hashedPassword = _sha256Adapter.HashedPassword(password);
+            var passwordFromDb = _profileDao.Password(accountId);
+            var hashedPassword = _hash.ComputeHash(password);
             var currentOtp = _otpService.CurrentOtp(accountId, otp);
 
             if (passwordFromDb == hashedPassword && currentOtp == otp)
@@ -43,7 +53,7 @@ namespace DependencyInjectionWorkshop.Models
             {
                 _failedCounter.Increase(accountId);
                 LogFailedCount(accountId);
-                _slackAdapter.Notify(accountId);
+                _notification.Notify(accountId);
 
                 return false;
             }
@@ -52,7 +62,7 @@ namespace DependencyInjectionWorkshop.Models
         private void LogFailedCount(string accountId)
         {
             var failedCount = _failedCounter.FailedCount(accountId);
-            _nLogAdapter.Info($"accountId:{accountId} failed times:{failedCount}");
+            _logger.Info($"accountId:{accountId} failed times:{failedCount}");
         }
     }
 }

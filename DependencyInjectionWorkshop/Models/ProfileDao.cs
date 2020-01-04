@@ -5,13 +5,18 @@ using Dapper;
 
 namespace DependencyInjectionWorkshop.Models
 {
-    public class ProfileDao
+    public interface IProfile
+    {
+        string Password(string accountId);
+    }
+
+    public class ProfileDao : IProfile
     {
         public ProfileDao()
         {
         }
 
-        public string PasswordFromDb(string accountId)
+        public string Password(string accountId)
         {
             string passwordFromDb;
             using (var connection = new SqlConnection("my connection string"))
