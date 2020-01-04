@@ -24,32 +24,35 @@ namespace DependencyInjectionWorkshop.Models
 
         public bool Verify(string accountId, string password, string otp)
         {
-            var httpClient = new HttpClient() {BaseAddress = new Uri("http://joey.com/")};
-
-            if (_failedCounter.IsLocked(accountId, httpClient))
+            if (_failedCounter.IsLocked(accountId))
             {
                 throw new FailedTooManyTimesException(){AccountId = accountId};
             }
 
             var passwordFromDb = _profileDao.PasswordFromDb(accountId);
             var hashedPassword = _sha256Adapter.HashedPassword(password);
-            var currentOtp = _otpService.CurrentOtp(accountId, otp, httpClient);
+            var currentOtp = _otpService.CurrentOtp(accountId, otp);
 
             if (passwordFromDb == hashedPassword && currentOtp == otp)
             {
-                _failedCounter.Reset(accountId, httpClient);
+                _failedCounter.Reset(accountId);
 
                 return true;
             }
             else
             {
-                _failedCounter.Increase(accountId, httpClient);
-                var failedCount = _failedCounter.FailedCount(accountId, httpClient);
-                _nLogAdapter.Info($"accountId:{accountId} failed times:{failedCount}");
+                _failedCounter.Increase(accountId);
+                LogFailedCount(accountId);
                 _slackAdapter.Notify(accountId);
 
                 return false;
             }
+        }
+
+        private void LogFailedCount(string accountId)
+        {
+            var failedCount = _failedCounter.FailedCount(accountId);
+            _nLogAdapter.Info($"accountId:{accountId} failed times:{failedCount}");
         }
     }
 }

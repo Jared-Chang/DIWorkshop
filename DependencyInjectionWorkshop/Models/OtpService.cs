@@ -9,9 +9,9 @@ namespace DependencyInjectionWorkshop.Models
         {
         }
 
-        public string CurrentOtp(string accountId, string otp, HttpClient httpClient)
+        public string CurrentOtp(string accountId, string otp)
         {
-            var response = httpClient.PostAsJsonAsync("api/otps", accountId).Result;
+            var response = new HttpClient() {BaseAddress = new Uri("http://joey.com/")}.PostAsJsonAsync("api/otps", accountId).Result;
             if (!response.IsSuccessStatusCode)
             {
                 throw new Exception($"web api error, accountId:{accountId}");
