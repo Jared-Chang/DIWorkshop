@@ -5,7 +5,7 @@ namespace DependencyInjectionWorkshop
     public class AuditLogDecorator : AuthenticationDecoratorBase
     {
         private readonly ILogger _logger;
-        private IContext _context;
+        private readonly IContext _context;
 
         public AuditLogDecorator(IAuthenticationService authenticationService, ILogger logger, IContext context) : base(authenticationService)
         {

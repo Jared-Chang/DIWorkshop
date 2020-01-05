@@ -1,5 +1,6 @@
 ﻿using System;
 using Autofac;
+using Autofac.Extras.DynamicProxy;
 using DependencyInjectionWorkshop;
 using DependencyInjectionWorkshop.Models;
 
@@ -40,14 +41,17 @@ namespace MyConsole
             containerBuilder.RegisterType<FakeOtp>().As<IOtpService>();
 
             containerBuilder.RegisterType<FakeContext>().As<IContext>().SingleInstance();
+            containerBuilder.RegisterType<AuditLogInterceptor>();
 
-            containerBuilder.RegisterType<AuthenticationService>().As<IAuthenticationService>();
+            containerBuilder.RegisterType<AuthenticationService>().As<IAuthenticationService>()
+                .EnableInterfaceInterceptors()
+                .InterceptedBy(typeof(AuditLogInterceptor));
 
             containerBuilder.RegisterDecorator<FailedCountDecorator, IAuthenticationService>();
             containerBuilder.RegisterDecorator<LogDecorator, IAuthenticationService>();
             containerBuilder.RegisterDecorator<NotificationDecorator, IAuthenticationService>();
             //containerBuilder.RegisterDecorator<LogMethodDecorator, IAuthenticationService>();
-            containerBuilder.RegisterDecorator<AuditLogDecorator, IAuthenticationService>();
+            //containerBuilder.RegisterDecorator<AuditLogDecorator, IAuthenticationService>();
 
             _container = containerBuilder.Build();
         }
