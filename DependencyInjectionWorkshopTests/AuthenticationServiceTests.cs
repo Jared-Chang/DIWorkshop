@@ -22,8 +22,8 @@ namespace DependencyInjectionWorkshopTests
                 new AuthenticationService(_profileDao, _hash, _otpService);
 
             _authenticationService = new LogDecorator(_authenticationService, _failedCounter, _logger);
-            _authenticationService = new FailedCountDecorator(_authenticationService, _failedCounter);
             _authenticationService = new NotificationDecorator(_authenticationService, _notification);
+            _authenticationService = new FailedCountDecorator(_authenticationService, _failedCounter);
         }
 
         [Test]
@@ -39,6 +39,21 @@ namespace DependencyInjectionWorkshopTests
             WhenInvalid();
 
             ShouldIncreaseFailedCount(DefaultAccountId);
+        }
+
+        [Test]
+        public void invalid_order()
+        {
+            WhenInvalid();
+
+            Received.InOrder(() =>
+            {
+                _failedCounter.IsLocked(Arg.Any<string>());
+                _failedCounter.FailedCount(Arg.Any<string>());
+                _logger.Info(Arg.Any<string>());
+                _notification.Notify(Arg.Any<string>(), Arg.Any<string>());
+                _failedCounter.Increase(Arg.Any<string>());
+            });
         }
 
         [Test]
@@ -86,6 +101,19 @@ namespace DependencyInjectionWorkshopTests
             WhenValid();
 
             ShouldResetFailedCount(DefaultAccountId);
+        }
+
+
+        [Test]
+        public void valid_order()
+        {
+            WhenValid();
+
+            Received.InOrder(() =>
+            {
+                _failedCounter.IsLocked(Arg.Any<string>());
+                _failedCounter.Reset(Arg.Any<string>());
+            });
         }
 
         private const string DefaultAccountId = "joey";
