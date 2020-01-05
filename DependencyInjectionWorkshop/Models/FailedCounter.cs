@@ -8,6 +8,7 @@ namespace DependencyInjectionWorkshop.Models
         void Increase(string accountId);
         void Reset(string accountId);
         bool IsLocked(string accountId);
+        [AuditLog]
         int FailedCount(string accountId);
     }
 

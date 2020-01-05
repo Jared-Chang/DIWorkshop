@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Castle.DynamicProxy;
 using DependencyInjectionWorkshop.Models;
 
@@ -17,14 +18,21 @@ namespace DependencyInjectionWorkshop
 
         public void Intercept(IInvocation invocation)
         {
-            var currentUser = _context.GetUser();
-            var parameters = string.Join("|", invocation.Arguments.Select(p => p.ToString()));
-            _logger.Info($"[Audit] user:{currentUser.Name} invoke with parameter {parameters}");
+            if (!(Attribute.GetCustomAttribute(invocation.Method, typeof(AuditLogAttribute)) is AuditLogAttribute))
+            {
+                invocation.Proceed();
+            }
+            else
+            {
+                var currentUser = _context.GetUser();
+                var parameters = string.Join("|", invocation.Arguments.Select(p => p.ToString()));
+                _logger.Info($"[Audit] user:{currentUser.Name} invoke with parameter {parameters}");
 
-            invocation.Proceed();
+                invocation.Proceed();
 
-            var returnValue = invocation.ReturnValue;
-            _logger.Info($"[Audit] Return value:{returnValue}");
+                var returnValue = invocation.ReturnValue;
+                _logger.Info($"[Audit] Return value:{returnValue}");
+            }
         }
     }
 }
