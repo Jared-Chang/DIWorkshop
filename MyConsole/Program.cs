@@ -49,9 +49,9 @@ namespace MyConsole
             containerBuilder.RegisterType<AuthenticationService>().As<IAuthenticationService>()
                 .EnableInterfaceInterceptors();
 
-            containerBuilder.RegisterDecorator<FailedCountDecorator, IAuthenticationService>();
-            containerBuilder.RegisterDecorator<LogDecorator, IAuthenticationService>();
-            containerBuilder.RegisterDecorator<NotificationDecorator, IAuthenticationService>();
+            //containerBuilder.RegisterDecorator<FailedCountDecorator, IAuthenticationService>();
+            //containerBuilder.RegisterDecorator<LogDecorator, IAuthenticationService>();
+            //containerBuilder.RegisterDecorator<NotificationDecorator, IAuthenticationService>();
             //containerBuilder.RegisterDecorator<LogMethodDecorator, IAuthenticationService>();
             //containerBuilder.RegisterDecorator<AuditLogDecorator, IAuthenticationService>();
 

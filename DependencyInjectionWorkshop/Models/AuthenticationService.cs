@@ -2,13 +2,12 @@
 
 namespace DependencyInjectionWorkshop.Models
 {
-    [Intercept(typeof(AuditLogInterceptor))]
     public interface IAuthenticationService
     {
-        [AuditLog]
         bool Verify(string accountId, string password, string otp);
     }
 
+    [Intercept(typeof(AuditLogInterceptor))]
     public class AuthenticationService : IAuthenticationService
     {
         private readonly IHash _hash;
@@ -22,6 +21,7 @@ namespace DependencyInjectionWorkshop.Models
             _otpService = otpService;
         }
 
+        [AuditLog]
         public bool Verify(string accountId, string password, string otp)
         {
             var passwordFromDb = _profileDao.Password(accountId);
