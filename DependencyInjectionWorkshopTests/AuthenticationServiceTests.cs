@@ -1,4 +1,5 @@
 ﻿using System;
+using DependencyInjectionWorkshop;
 using DependencyInjectionWorkshop.Models;
 using NSubstitute;
 using NUnit.Framework;

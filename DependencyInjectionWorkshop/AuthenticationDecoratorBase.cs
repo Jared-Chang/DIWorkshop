@@ -1,6 +1,6 @@
 ﻿using DependencyInjectionWorkshop.Models;
 
-namespace DependencyInjectionWorkshopTests
+namespace DependencyInjectionWorkshop
 {
     public abstract class AuthenticationDecoratorBase : IAuthenticationService
     {

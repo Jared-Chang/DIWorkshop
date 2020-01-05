@@ -1,6 +1,6 @@
 ﻿using DependencyInjectionWorkshop.Models;
 
-namespace DependencyInjectionWorkshopTests
+namespace DependencyInjectionWorkshop
 {
     public class LogDecorator : AuthenticationDecoratorBase
     {

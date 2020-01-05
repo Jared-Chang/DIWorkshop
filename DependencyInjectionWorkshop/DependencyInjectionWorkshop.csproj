@@ -75,6 +75,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AuthenticationDecoratorBase.cs" />
+    <Compile Include="FailedCountDecorator.cs" />
+    <Compile Include="LogDecorator.cs" />
     <Compile Include="Models\AuthenticationService.cs" />
     <Compile Include="Models\FailedCounter.cs" />
     <Compile Include="Models\FailedTooManyTimesException.cs" />
@@ -84,6 +87,7 @@
     <Compile Include="Models\ProfileDao.cs" />
     <Compile Include="Models\Sha256Adapter.cs" />
     <Compile Include="Models\SlackAdapter.cs" />
+    <Compile Include="NotificationDecorator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
