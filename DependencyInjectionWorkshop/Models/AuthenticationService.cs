@@ -1,7 +1,11 @@
-﻿namespace DependencyInjectionWorkshop.Models
+﻿using Autofac.Extras.DynamicProxy;
+
+namespace DependencyInjectionWorkshop.Models
 {
+    [Intercept(typeof(AuditLogInterceptor))]
     public interface IAuthenticationService
     {
+        [AuditLog]
         bool Verify(string accountId, string password, string otp);
     }
 

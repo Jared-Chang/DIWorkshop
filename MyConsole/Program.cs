@@ -47,8 +47,7 @@ namespace MyConsole
             containerBuilder.RegisterType<AuditLogInterceptor>();
 
             containerBuilder.RegisterType<AuthenticationService>().As<IAuthenticationService>()
-                .EnableInterfaceInterceptors()
-                .InterceptedBy(typeof(AuditLogInterceptor));
+                .EnableInterfaceInterceptors();
 
             containerBuilder.RegisterDecorator<FailedCountDecorator, IAuthenticationService>();
             containerBuilder.RegisterDecorator<LogDecorator, IAuthenticationService>();

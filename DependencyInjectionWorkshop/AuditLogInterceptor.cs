@@ -18,7 +18,8 @@ namespace DependencyInjectionWorkshop
 
         public void Intercept(IInvocation invocation)
         {
-            if (!(Attribute.GetCustomAttribute(invocation.Method, typeof(AuditLogAttribute)) is AuditLogAttribute))
+            if (!(Attribute.GetCustomAttribute(invocation.Method, typeof(AuditLogAttribute)) is AuditLogAttribute
+                auditLogAttribute))
             {
                 invocation.Proceed();
             }
