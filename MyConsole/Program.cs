@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Autofac;
 using DependencyInjectionWorkshop;
 using DependencyInjectionWorkshop.Models;
 
 namespace MyConsole
 {
-    class Program
+    internal class Program
     {
         private static IAuthenticationService _authentication;
         private static IFailedCounter _failedCounter;
@@ -17,29 +14,39 @@ namespace MyConsole
         private static INotification _notification;
         private static IOtpService _otpService;
         private static IProfile _profile;
+        private static IContainer _container;
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            _otpService = new FakeOtp();
-            _hash = new FakeHash();
-            _profile = new FakeProfile();
-            _logger = new FakeLogger();
-            _notification = new FakeSlack();
-            _failedCounter = new FakeFailedCounter();
-            _authentication =
-                new AuthenticationService(_profile, _hash, _otpService);
+            RegisterContainer();
 
-            _authentication = new FailedCountDecorator(_authentication, _failedCounter);
-            _authentication = new LogDecorator(_authentication, _failedCounter, _logger);
-            _authentication = new NotificationDecorator(_authentication, _notification);
-
+            _authentication = _container.Resolve<IAuthenticationService>();
 
             var isValid = _authentication.Verify("joey", "abc", "wrong otp");
-            Console.WriteLine($"result:{isValid}");
 
+            Console.WriteLine($"result:{isValid}");
+        }
+
+        private static void RegisterContainer()
+        {
+            var containerBuilder = new ContainerBuilder();
+
+            containerBuilder.RegisterType<FakeProfile>().As<IProfile>();
+            containerBuilder.RegisterType<FakeLogger>().As<ILogger>();
+            containerBuilder.RegisterType<FakeSlack>().As<INotification>();
+            containerBuilder.RegisterType<FakeFailedCounter>().As<IFailedCounter>();
+            containerBuilder.RegisterType<FakeHash>().As<IHash>();
+            containerBuilder.RegisterType<FakeOtp>().As<IOtpService>();
+
+            containerBuilder.RegisterType<AuthenticationService>().As<IAuthenticationService>();
+
+            containerBuilder.RegisterDecorator<FailedCountDecorator, IAuthenticationService>();
+            containerBuilder.RegisterDecorator<LogDecorator, IAuthenticationService>();
+            containerBuilder.RegisterDecorator<NotificationDecorator, IAuthenticationService>();
+
+            _container = containerBuilder.Build();
         }
     }
-
 
     internal class FakeLogger : ILogger
     {
@@ -51,14 +58,14 @@ namespace MyConsole
 
     internal class FakeSlack : INotification
     {
-        public void PushMessage(string message)
-        {
-            Console.WriteLine(message);
-        }
-
         public void Notify(string accountId, string message)
         {
             PushMessage($"{nameof(Notify)}, accountId:{accountId}, message:{message}");
+        }
+
+        public void PushMessage(string message)
+        {
+            Console.WriteLine(message);
         }
     }
 
