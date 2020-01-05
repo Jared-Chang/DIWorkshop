@@ -7,24 +7,25 @@ namespace MyConsole
 {
     internal class Program
     {
-        private static IAuthenticationService _authentication;
-        private static IFailedCounter _failedCounter;
-        private static IHash _hash;
-        private static ILogger _logger;
-        private static INotification _notification;
-        private static IOtpService _otpService;
-        private static IProfile _profile;
         private static IContainer _container;
 
         private static void Main(string[] args)
         {
             RegisterContainer();
 
-            _authentication = _container.Resolve<IAuthenticationService>();
+            var authenticationService = _container.Resolve<IAuthenticationService>();
 
-            var isValid = _authentication.Verify("joey", "abc", "wrong otp");
+            Login("joey", "91");
+
+            var isValid = authenticationService.Verify("joey", "abc", "wrong otp");
 
             Console.WriteLine($"result:{isValid}");
+        }
+
+        private static void Login(string name, string password)
+        {
+            var context = _container.Resolve<IContext>();
+            context.SetUser(name);
         }
 
         private static void RegisterContainer()
@@ -38,13 +39,32 @@ namespace MyConsole
             containerBuilder.RegisterType<FakeHash>().As<IHash>();
             containerBuilder.RegisterType<FakeOtp>().As<IOtpService>();
 
+            containerBuilder.RegisterType<FakeContext>().As<IContext>().SingleInstance();
+
             containerBuilder.RegisterType<AuthenticationService>().As<IAuthenticationService>();
 
             containerBuilder.RegisterDecorator<FailedCountDecorator, IAuthenticationService>();
             containerBuilder.RegisterDecorator<LogDecorator, IAuthenticationService>();
             containerBuilder.RegisterDecorator<NotificationDecorator, IAuthenticationService>();
+            //containerBuilder.RegisterDecorator<LogMethodDecorator, IAuthenticationService>();
+            containerBuilder.RegisterDecorator<AuditLogDecorator, IAuthenticationService>();
 
             _container = containerBuilder.Build();
+        }
+    }
+
+    public class FakeContext : IContext
+    {
+        private User _user;
+
+        public User GetUser()
+        {
+            return _user;
+        }
+
+        public void SetUser(string name)
+        {
+            _user = new User {Name = name};
         }
     }
 
